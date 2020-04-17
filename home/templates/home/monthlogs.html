@@ -1,0 +1,750 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>Month Data</title>
+<!--End include header-->
+</head>
+
+{% endblock %}
+
+{% block body %}
+
+{% if user.is_superuser %}
+
+{% csrf_token %}
+    <!-- Nav Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Admin Site</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+              <a class="nav-link" href="{% url 'home_page' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'compare' %}">Compare</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'info' %}">Site Information</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>           
+          </ul>
+      </div>
+      </nav>
+  <!-- Nav Content -->
+  <!-- Sub Nav Content -->
+  <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+      <p>Hello, {{ user.first_name }} {{ user.last_name }}</p>
+    </nav>
+  <!-- End Sub Nav Content -->
+
+<!-- Month Chart Content -->
+{% for entry in entries %}
+  <div class="container-fluid">
+    <br>
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-4">Monthly Charts</h1>
+        <p class="lead">Charts representing data over the months in the current year of the selected home.
+          Each month can be toggled on or off.
+        </p>
+      </div>
+    </div>
+    <br>
+    <div class="accordion" id="accordionCharts"> 
+      <div class="card">
+      <div class="card-header" id="headingOne">
+        <h2 class="mb-0">
+        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Month Battery Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="monthBatteryChart" data-url="http://127.0.0.1:8000/admin/battery/monthdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+      <br>
+      
+      <div class="card">
+      <div class="card-header" id="headingTwo">
+        <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          Month Consumption Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="monthConsumptionChart" data-url="http://127.0.0.1:8000/admin/consumption/monthdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+      <br>
+      
+       <div class="card">
+      <div class="card-header" id="headingThree">
+        <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          Month Solar Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="monthSolarChart" data-url="http://127.0.0.1:8000/admin/solar/monthdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+      <br>
+      
+      <div class="card">
+      <div class="card-header" id="headingFour">
+        <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+          Month Money Saved Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="monthSavedChart" data-url="http://127.0.0.1:8000/admin/saved/monthdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+  <br>
+{% endfor %}
+
+{% else %}
+
+<div class="card">
+  <div class="card-header">
+    Featured
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Login Error</h5>
+    <p class="card-text">Please login as an administator to view this content</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Login Here</a>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+$(function() {
+  var daylabels = []
+  var janData = []
+  var febData = []
+  var marData = []
+  var aprData = []
+  var mayData = []
+  var junData = []
+  var julData = []
+  var augData = []
+  var sepData = []
+  var octData = []
+  var novData = []
+  var desData = []
+
+var $monthChart = $("#monthBatteryChart");
+$.ajax({
+  method: "GET",
+  url: $monthChart.data("url"),
+  success: function(data){
+
+    daylabels = data.daylabels
+    janData = data.jan
+    febData = data.feb
+    marData = data.mar
+    aprData = data.apr
+    mayData = data.may
+    junData = data.jun
+    julData = data.jul
+    augData = data.aug
+    sepData = data.sep
+    octData = data.oct
+    novData = data.nov
+    desData = data.des
+
+    var ctx = document.getElementById('monthBatteryChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+
+          // The data for our dataset
+          data: {
+              labels: daylabels,
+              datasets: [{ 
+                data: janData,
+                label: "Jan",
+                borderColor: "#000000",
+                fill: false
+              }, { 
+                data: febData,
+                label: "Feb",
+                borderColor: "#8E5EA2",
+                fill: false
+              }, { 
+                data: marData,
+                label: "Mar",
+                borderColor: "#3CBA9F",
+                fill: false
+              }, { 
+                data: aprData,
+                label: "Apr",
+                borderColor: "#E8C3B9",
+                fill: false
+              }, { 
+                data: mayData,
+                label: "May",
+                borderColor: "#CC9483",
+                fill: false
+              }, { 
+                data: junData,
+                label: "Jun",
+                borderColor: "#689971",
+                fill: false
+              }, { 
+                data: julData,
+                label: "Jul",
+                borderColor: "#FF1A2A",
+                fill: false
+              }, { 
+                data: augData,
+                label: "Aug",
+                borderColor: "#FFFF97",
+                fill: false
+              }, { 
+                data: sepData,
+                label: "Sep",
+                borderColor: "#51CCCB",
+                fill: false
+              }, { 
+                data: octData,
+                label: "Qct",
+                borderColor: "#3E95CD",
+                fill: false
+              }, { 
+                data: novData,
+                label: "Nov",
+                borderColor: "#00FF00",
+                fill: false
+              }, { 
+                data: desData,
+                label: "Des",
+                borderColor: "#66FFFF",
+                fill: false
+              }
+            ]
+          
+          },
+
+          // Configuration options go here
+          options: {
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Monthly Battery Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Day of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+$(function() {
+  var daylabels = []
+  var janData = []
+  var febData = []
+  var marData = []
+  var aprData = []
+  var mayData = []
+  var junData = []
+  var julData = []
+  var augData = []
+  var sepData = []
+  var octData = []
+  var novData = []
+  var desData = []
+
+var $monthChart = $("#monthConsumptionChart");
+$.ajax({
+  method: "GET",
+  url: $monthChart.data("url"),
+  success: function(data){
+
+    daylabels = data.daylabels
+    janData = data.jan
+    febData = data.feb
+    marData = data.mar
+    aprData = data.apr
+    mayData = data.may
+    junData = data.jun
+    julData = data.jul
+    augData = data.aug
+    sepData = data.sep
+    octData = data.oct
+    novData = data.nov
+    desData = data.des
+
+    var ctx = document.getElementById('monthConsumptionChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+
+          // The data for our dataset
+          data: {
+              labels: daylabels,
+              datasets: [{ 
+                data: janData,
+                label: "Jan",
+                borderColor: "#000000",
+                fill: false
+              }, { 
+                data: febData,
+                label: "Feb",
+                borderColor: "#8E5EA2",
+                fill: false
+              }, { 
+                data: marData,
+                label: "Mar",
+                borderColor: "#3CBA9F",
+                fill: false
+              }, { 
+                data: aprData,
+                label: "Apr",
+                borderColor: "#E8C3B9",
+                fill: false
+              }, { 
+                data: mayData,
+                label: "May",
+                borderColor: "#CC9483",
+                fill: false
+              }, { 
+                data: junData,
+                label: "Jun",
+                borderColor: "#689971",
+                fill: false
+              }, { 
+                data: julData,
+                label: "Jul",
+                borderColor: "#FF1A2A",
+                fill: false
+              }, { 
+                data: augData,
+                label: "Aug",
+                borderColor: "#FFFF97",
+                fill: false
+              }, { 
+                data: sepData,
+                label: "Sep",
+                borderColor: "#51CCCB",
+                fill: false
+              }, { 
+                data: octData,
+                label: "Qct",
+                borderColor: "#3E95CD",
+                fill: false
+              }, { 
+                data: novData,
+                label: "Nov",
+                borderColor: "#00FF00",
+                fill: false
+              }, { 
+                data: desData,
+                label: "Des",
+                borderColor: "#66FFFF",
+                fill: false
+              }
+            ]
+          
+          },
+
+          // Configuration options go here
+          options: {
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Monthly Consumption Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Day of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+$(function() {
+  var daylabels = []
+  var janData = []
+  var febData = []
+  var marData = []
+  var aprData = []
+  var mayData = []
+  var junData = []
+  var julData = []
+  var augData = []
+  var sepData = []
+  var octData = []
+  var novData = []
+  var desData = []
+
+var $monthChart = $("#monthSavedChart");
+$.ajax({
+  method: "GET",
+  url: $monthChart.data("url"),
+  success: function(data){
+
+    daylabels = data.daylabels
+    janData = data.jan
+    febData = data.feb
+    marData = data.mar
+    aprData = data.apr
+    mayData = data.may
+    junData = data.jun
+    julData = data.jul
+    augData = data.aug
+    sepData = data.sep
+    octData = data.oct
+    novData = data.nov
+    desData = data.des
+
+    var ctx = document.getElementById('monthSavedChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+
+          // The data for our dataset
+          data: {
+              labels: daylabels,
+              datasets: [{ 
+                data: janData,
+                label: "Jan",
+                borderColor: "#000000",
+                fill: false
+              }, { 
+                data: febData,
+                label: "Feb",
+                borderColor: "#8E5EA2",
+                fill: false
+              }, { 
+                data: marData,
+                label: "Mar",
+                borderColor: "#3CBA9F",
+                fill: false
+              }, { 
+                data: aprData,
+                label: "Apr",
+                borderColor: "#E8C3B9",
+                fill: false
+              }, { 
+                data: mayData,
+                label: "May",
+                borderColor: "#CC9483",
+                fill: false
+              }, { 
+                data: junData,
+                label: "Jun",
+                borderColor: "#689971",
+                fill: false
+              }, { 
+                data: julData,
+                label: "Jul",
+                borderColor: "#FF1A2A",
+                fill: false
+              }, { 
+                data: augData,
+                label: "Aug",
+                borderColor: "#FFFF97",
+                fill: false
+              }, { 
+                data: sepData,
+                label: "Sep",
+                borderColor: "#51CCCB",
+                fill: false
+              }, { 
+                data: octData,
+                label: "Qct",
+                borderColor: "#3E95CD",
+                fill: false
+              }, { 
+                data: novData,
+                label: "Nov",
+                borderColor: "#00FF00",
+                fill: false
+              }, { 
+                data: desData,
+                label: "Des",
+                borderColor: "#66FFFF",
+                fill: false
+              }
+            ]
+          
+          },
+
+          // Configuration options go here
+          options: {
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Monthly Money Saved Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Day of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Pounds(£) / Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+$(function() {
+  var daylabels = []
+  var janData = []
+  var febData = []
+  var marData = []
+  var aprData = []
+  var mayData = []
+  var junData = []
+  var julData = []
+  var augData = []
+  var sepData = []
+  var octData = []
+  var novData = []
+  var desData = []
+
+var $monthChart = $("#monthSolarChart");
+$.ajax({
+  method: "GET",
+  url: $monthChart.data("url"),
+  success: function(data){
+
+    daylabels = data.daylabels
+    janData = data.jan
+    febData = data.feb
+    marData = data.mar
+    aprData = data.apr
+    mayData = data.may
+    junData = data.jun
+    julData = data.jul
+    augData = data.aug
+    sepData = data.sep
+    octData = data.oct
+    novData = data.nov
+    desData = data.des
+
+    var ctx = document.getElementById('monthSolarChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+
+          // The data for our dataset
+          data: {
+              labels: daylabels,
+              datasets: [{ 
+                data: janData,
+                label: "Jan",
+                borderColor: "#000000",
+                fill: false
+              }, { 
+                data: febData,
+                label: "Feb",
+                borderColor: "#8E5EA2",
+                fill: false
+              }, { 
+                data: marData,
+                label: "Mar",
+                borderColor: "#3CBA9F",
+                fill: false
+              }, { 
+                data: aprData,
+                label: "Apr",
+                borderColor: "#E8C3B9",
+                fill: false
+              }, { 
+                data: mayData,
+                label: "May",
+                borderColor: "#CC9483",
+                fill: false
+              }, { 
+                data: junData,
+                label: "Jun",
+                borderColor: "#689971",
+                fill: false
+              }, { 
+                data: julData,
+                label: "Jul",
+                borderColor: "#FF1A2A",
+                fill: false
+              }, { 
+                data: augData,
+                label: "Aug",
+                borderColor: "#FFFF97",
+                fill: false
+              }, { 
+                data: sepData,
+                label: "Sep",
+                borderColor: "#51CCCB",
+                fill: false
+              }, { 
+                data: octData,
+                label: "Qct",
+                borderColor: "#3E95CD",
+                fill: false
+              }, { 
+                data: novData,
+                label: "Nov",
+                borderColor: "#00FF00",
+                fill: false
+              }, { 
+                data: desData,
+                label: "Des",
+                borderColor: "#66FFFF",
+                fill: false
+              }
+            ]
+          
+          },
+
+          // Configuration options go here
+          options: {
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Monthly Solar Generation Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Day of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+</script>
+
+{% endblock %}
+
+
+
+

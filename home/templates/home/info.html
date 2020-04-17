@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>API Information</title>
+<!--End include header-->
+</head>
+
+{% endblock %}
+
+{% block body %}
+{% csrf_token %}
+{% if user.is_superuser %}
+  
+    <!-- Nav Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Admin Site</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'home_page' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'compare' %}">Compare</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'info' %}">Site Information</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>           
+          </ul>
+      </div>
+      </nav>
+  <!-- Nav Content -->
+  <!-- Sub Nav Content -->
+  <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+      <p>Hello, {{ user.first_name }} {{ user.last_name }}</p>
+    </nav>
+  <!-- End Sub Nav Content -->
+<br>
+<div class="container-fluid">
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+          <h1 class="display-4">API Information</h1>
+          <p class="lead">Information related to the administrator website and API.</p>
+                   
+        </div>
+      </div>
+      <div class="alert alert-warning" role="alert">
+        <p class="lead">*The ‘id’ query must be a registered home</p>
+      </div>
+      <div class="card">
+        <table class="table table-striped">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Website URLs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">/account/login</th>
+                <td>Administrator login page. 
+                  User must be registered as a super user to access the site. </td>
+              </tr>
+              <tr>
+                <th scope="row">/home/admin</th>
+                <td>Administrator home page.</td>
+              </tr>
+              <tr>
+                <th scope="row">/home/admin/siteinfo</th>
+                <td>Information regarding the admin website and APIs.</td>
+              </tr>
+              <tr>
+                <th scope="row">/home/admin/compare_homes</th>
+                <td>Allows the user to compare data from two homes. 
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">/home/admin/homeinfo/week?q=<strong>"id"</strong></th>
+                <td>Charts display over the past week or the 7 days from the last POST request.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">/home/admin/homeinfo/month?q=<strong>"id"</strong></th>
+                <td>Charts display months (‘day’ datapoints) of current year.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">/home/admin/homeinfo/year?q=<strong>"id"</strong></th>
+                <td>Charts displaying the totals of each month over the last five years. 
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+      <br>
+      <div class="card">
+        <table class="table table-striped">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">API URLs</th>
+                <th scope="col">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">/account/register</th>
+                <td><p><em>POST</em></p>Allows user registration, provided the information passes checks, for example a unique email. </td>
+              </tr>
+              <tr>
+                <th scope="row">/account/auth/login</th>
+                <td><p><em>POST</em></p>Allow user to login.</td>
+              </tr>
+              <tr>
+                <th scope="row">/account/auth/logout</th>
+                <td><p><em>POST</em></p>Log user out of the system.</td>
+              </tr>
+              <tr>
+                <th scope="row">account/auth/user</th>
+                <td><p><em>GET, PUT, PATCH</em></p>
+                  Returns the logged users profile data and allows this information to be updated.</tr>
+              <tr>
+                <th scope="row">/account/auth/password/change/<strong>"id"</strong></th>
+                <td><p><em>POST</em></p>
+                  Allows the current user to change user password.</td>
+              </tr>
+              <tr>
+                <th scope="row">/account/admin/users</th>
+                <td><p><em>GET, POST</em></p>
+                  Returns list of administrator users and allows the addition of new administrator users.</td>
+              </tr>
+              <tr>
+                <th scope="row">/home/api/homestats/<strong>"id"</strong></th>
+                <td><p><em>GET, PUT, PATCH</em></p>
+                  Returns information of the home of the current user and allows this information to be updated throughout the current day. Default information is added on user registration.</td>
+              </tr>
+              <tr>
+                <th scope="row">/home/api/daylogs/<strong>"id"</strong></th>
+                <td><p><em>GET, POST</em></p>
+                  Allows the posting and retrieval of end of day totals.</td>
+              </tr>
+              <tr>
+                <th scope="row">/home/api/devices/<strong>"id"</strong></th>
+                <td><p><em>GET, POST, PUT, PATCH</em></p>Add, retrieve or update device list.</td>
+              </tr>
+              <tr>
+                <th scope="row">/home/api/roomcontrol/<strong>"id"</strong></th>
+                <td><p><em>GET, POST, PUT, PATCH</em></p>Stores users’ interactions with each room within the home.</td>
+              </tr>
+              <tr>
+                <th scope="row">admin/battery/weekdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns battery data from the past week based on home(query).
+                  </td>
+              </tr>
+              <tr>
+                <th scope="row">admin/consumption/weekdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns power consumption data from the past week based on home(query).
+                  </td>
+              </tr>
+              <tr>
+                <th scope="row">admin/saved/weekdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns money saved data from the past week based on home(query).</td>
+              </tr>
+              <tr>
+                <th scope="row">admin/solar/weekdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns solar production data from the past week based on home(query).
+                  </td>
+              </tr>
+              <tr>
+                <th scope="row">admin/battery/monthdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns battery data from each month of the current year on home(query).
+                  </td>
+              </tr>
+              <tr>
+                <th scope="row">admin/consumption/monthdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns power consumption data from each month of the current year on home(query).</td>
+              </tr>
+              <tr>
+                <th scope="row">admin/saved/monthdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns money saved data from each month of the current year on home(query).</tr>
+              <tr>
+                <th scope="row">admin/solar/monthdata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns solar generation data from each month of the current year on home(query).</td>
+              </tr>
+
+              <tr>
+                <th scope="row">admin/battery/yeardata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns battery monthly totals over the past 5 years based on home(query).</tr>
+
+              <tr>
+                <th scope="row">admin/consumption/yeardata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns power consumption monthly totals over the past 5 years based on home(query).</tr>
+
+              <tr>
+                <th scope="row">admin/saved/yeardata?q="<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns solar production monthly totals over the past 5 years based on home(query).<tr>
+                <th scope="row">admin/solar/yeardata?q=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Returns solar generation data from each month of the current year on home(query).</td>
+              </tr>
+
+              <tr>
+                <th scope="row">home/admin/compare/month?a ="<strong>"id"</strong>&b=<strong>"id"</strong></th>
+                <td><p><em>GET</em></p>
+                  Used in comparing two homes (administrator). Returns values over the past month, including the global average of all registered homes.</tr>
+            </tbody>
+          </table>
+      </div>
+      <br>
+</div>
+{% else %}
+  <div class="card">
+    <div class="card-header">
+      Featured
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Login Error</h5>
+      <p class="card-text">Please login as an administator to view this content</p>
+      <a href="{% url 'login' %}" class="btn btn-primary">Login Here</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+
+

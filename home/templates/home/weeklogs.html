@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>Week Data</title>
+<!--End include header-->
+</head>
+
+{% endblock %}
+
+{% block body %}
+
+{% if user.is_superuser %}
+    <!-- Nav Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Admin Site</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+              <a class="nav-link" href="{% url 'home_page' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'compare' %}">Compare</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'info' %}">Site Information</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>          
+          </ul>
+      </div>
+      </nav>
+  <!-- Nav Content -->
+  <!-- Sub Nav Content -->
+  <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+      <p>Hello, {{ user.first_name }} {{ user.last_name }}</p>
+    </nav>
+  <!-- End Sub Nav Content -->
+<!-- Main Week Chart Content -->
+{% csrf_token %}
+<!-- Week Chart Content -->
+{% for entry in entries %}
+<div class="container-fluid">
+  <br>
+  <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <h1 class="display-4">Weekly Charts</h1>
+      <p class="lead">Charts representing data over the last seven days from the selected home</p>
+    </div>
+  </div>
+  <br>
+  <div class="accordion" id="accordionCharts">
+    <div class="card">
+      <div class="card-header" id="headingOne">
+        <h2 class="mb-0">
+          <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            Battery Chart
+          </button>
+        </h2>
+      </div>
+      <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="weekBatteryChart" data-url="http://127.0.0.1:8000/admin/battery/weekdata?q={{ entry.home_id }}"></canvas>
+        </div>
+    </div>
+    </div>
+    <br>
+    <div class="card">
+      <div class="card-header" id="headingTwo">
+        <h2 class="mb-0">
+          <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            Consumption Chart
+          </button>
+        </h2>
+      </div>
+      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="weekConsumptionChart" data-url="http://127.0.0.1:8000/admin/consumption/weekdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+    </div>
+    <br>
+    
+     <div class="card">
+      <div class="card-header" id="headingThree">
+        <h2 class="mb-0">
+          <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            Solar Chart
+          </button>
+        </h2>
+      </div>
+      <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="weekSolarChart" data-url="http://127.0.0.1:8000/admin/solar/weekdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+    </div>
+    <br>
+    
+    <div class="card">
+      <div class="card-header" id="headingFour">
+        <h2 class="mb-0">
+          <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+            Money Saved Chart 
+          </button>
+        </h2>
+      </div>
+      <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="weekSavedChart" data-url="http://127.0.0.1:8000/admin/saved/weekdata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+{% endfor %}
+<!-- End Week Chart Content -->
+{% else %}
+
+<div class="card">
+  <div class="card-header">
+    Featured
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Login Error</h5>
+    <p class="card-text">Please login as an administator to view this content</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Login Here</a>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+// Battery 
+$(function() {
+var weekData = []
+var labels = []
+var $weekChart = $("#weekBatteryChart");
+$.ajax({
+  method: "GET",
+  url: $weekChart.data("url"),
+  success: function(data){
+
+    labels = data.labels
+    weekData = data.values
+
+    var ctx = document.getElementById('weekBatteryChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: 'Past Week',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: weekData,
+                  fill: false
+              }]
+          },
+
+          // Configuration options go here
+          options: {
+            responsive: true,
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Battery Charge Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Date of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+// Power Consumptin 
+$(function() {
+var weekData = []
+var labels = []
+var $weekChart = $("#weekConsumptionChart");
+$.ajax({
+  method: "GET",
+  url: $weekChart.data("url"),
+  success: function(data){
+
+    labels = data.labels
+    weekData = data.values
+
+    var ctx = document.getElementById('weekConsumptionChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: 'Past Week Power Consumption Chart',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: weekData,
+                  fill: false
+              }]
+          },
+
+          // Configuration options go here
+          options: {
+            responsive: true,
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Power Consumption Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Date of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+
+// Money Saved 
+$(function() {
+var weekData = []
+var labels = []
+var $weekChart = $("#weekSavedChart");
+$.ajax({
+  method: "GET",
+  url: $weekChart.data("url"),
+  success: function(data){
+
+    labels = data.labels
+    weekData = data.values
+
+    var ctx = document.getElementById('weekSavedChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: 'Past Week Money Saved Chart',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: weekData,
+                  fill: false
+              }]
+          },
+
+          // Configuration options go here
+          options: {
+            responsive: true,
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Money Saved Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Date of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Pounds(£) per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+
+// Solar Generated
+$(function() {
+var weekData = []
+var labels = []
+var $weekChart = $("#weekSolarChart");
+$.ajax({
+  method: "GET",
+  url: $weekChart.data("url"),
+  success: function(data){
+
+    labels = data.labels
+    weekData = data.values
+
+    var ctx = document.getElementById('weekSolarChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: 'Past Week Solar Charge Chart',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderColor: 'rgb(255, 99, 132)',
+                  data: weekData,
+                  fill: false
+              }]
+          },
+
+          // Configuration options go here
+          options: {
+            responsive: true,
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Solar Production Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Date of Log'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Day'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+
+</script>
+
+{% endblock %}
+
+
+
+

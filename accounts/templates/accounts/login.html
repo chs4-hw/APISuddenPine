@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>Login</title>
+
+{% endblock %}
+
+
+{% block body %}
+
+<!-- Login Form-->	
+	<div class="container" id=container-admin>
+		<h1 class="text-center">Admin Login</h1>
+			<p class="text-center"><strong>This page is for Administrators only</strong></p>
+			<div class="col-12">
+
+			<form method="POST" action="{% url 'login' %}">
+				{% csrf_token %}
+					<div class="form-group">
+					  <label for="email">Email address</label>
+					  <input type="email" name="username" autocapitalize="none" autocomplete="username" maxlength="254" id="id_username" class="form-control" placeholder="Enter Email">
+					</div>
+					<div class="form-group">
+					  <label for="pass">Password</label>
+					   <input type="password" name="password" autocomplete="current-password" class="form-control" id="id_password" placeholder="Password">
+					  </div>
+					<button type="submit" class="btn btn-dark btn-lg btn-block">Submit</button>
+				</form>
+		</div>
+	</div>
+    <!-- End Login Form -->
+{% endblock %}

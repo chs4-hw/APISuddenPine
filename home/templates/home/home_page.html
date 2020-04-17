@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>Home</title>
+<!--End include header-->
+</head>
+
+{% endblock %}
+
+{% block body %}
+{% csrf_token %}
+{% if user.is_superuser %}
+  
+    <!-- Nav Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Admin Site</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+              <a class="nav-link" href="{% url 'home_page' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'compare' %}">Compare</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'info' %}">Site Information</a>
+          </li>          
+          <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>           
+          </ul>
+      </div>
+      </nav>
+  <!-- Nav Content -->
+  <!-- Sub Nav Content -->
+  <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+      <p>Hello, {{ user.first_name }} {{ user.last_name }}</p>
+    </nav>
+  <!-- End Sub Nav Content -->
+<br>
+<div class="container-fluid">
+  <div id="div-search">
+    <div class="card">
+      <div class="card-header">
+        <h3>Search Homes</h3>     
+      </div>
+        <div class="card-body ">
+          <div class="d-flex justify-content-center">
+            <div class="col-md-4">
+              <form action="{% url 'search' %}" method="get" id="searchForm">
+                <input name="q" type="text" class="form-control" placeholder="Search address, country, city or postcode">
+                <br>
+                <button type="submit" class="btn btn-outline-success btn-lg btn-block">Search</button> 
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="main-content">
+  {% if entries %}
+    {% for entry in entries %}
+    <div class="card">
+      <div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between flex-wrap">
+          <div class="col-sm-6">
+            <h6 class="card-title">Address:</h6><p>{{ entry.address }}, {{ entry.city }}, {{ entry.county }} {{ entry.zip }}</p>
+          </div>
+          <div class="col-sm-6"><h6 class="card-title">User Email:</h6><p>{{ entry.user }}</p></div>
+        </div>
+        <!-- Links to Log Data -->
+        <div class="d-flex justify-content-between flex-wrap">
+          <div class="col-md-4">
+            <form method="GET" action="{% url 'info_week' %}">   
+              <div class="form-group">
+                <input name="q" type="hidden" value="{{ entry.user_id }}">
+              </div>
+              <button type="submit" class="btn btn-dark btn-block">Past Week Logs</button>
+            </form>
+          </div>
+          <div class="col-md-4">
+            <form method="GET" action="{% url 'info_month' %}">   
+              <div class="form-group">
+                <input name="q" type="hidden" value="{{ entry.user_id }}">
+              </div>
+              <button type="submit" class="btn btn-dark btn-block">Monthly Logs</button>
+            </form>
+          </div>
+          <div class="col-md-4">
+            <form method="GET" action="{% url 'info_year' %}">   
+              <div class="form-group">
+                <input name="q" type="hidden" value="{{ entry.user_id }}">
+              </div>
+              <button type="submit" class="btn btn-dark btn-block">Yearly Logs</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+    {% endfor %}
+  {% else %}
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">No Search Results Found</h5>
+      </div>
+      <div class="card-body">       
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% else %}
+  <div class="card">
+    <div class="card-header">
+      Featured
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Login Error</h5>
+      <p class="card-text">Please login as an administator to view this content</p>
+      <a href="{% url 'login' %}" class="btn btn-primary">Login Here</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+
+
+

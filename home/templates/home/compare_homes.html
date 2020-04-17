@@ -1,0 +1,623 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>Home</title>
+<!--End include header-->
+</head>
+
+{% endblock %}
+
+{% block body %}
+{% csrf_token %}
+{% if user.is_superuser %}
+
+  
+    <!-- Nav Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Admin Site</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'home_page' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'compare' %}">Compare</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'info' %}">Site Information</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>           
+          </ul>
+      </div>
+      </nav>
+  <!-- Nav Content -->
+  <!-- Sub Nav Content -->
+  <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+      <p>Hello, {{ user.first_name }} {{ user.last_name }}</p>
+    </nav>
+  <!--End Sub Nav Content -->
+<br>
+<div class="container-fluid">
+    <div class="main-content">
+  {% if entries %}
+  <form id="compare_form" action="http://127.0.0.1:8000/home/admin/compare/month" autocomplete="off">
+  <div id="div-search">
+    <div class="card">
+      <div class="card-header">
+        <h3>Compare Homes</h3>     
+      </div>
+        <div class="card-body ">
+          <div class="d-flex justify-content-center">
+            <div class="col-md-4">
+                <button id="compareBtn" type="submit" class="btn btn-outline-success btn-lg btn-block" data-toggle="modal" data-target=".bd-example-modal-lg">Compare</button>
+                <br>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Select Home <strong>A</strong></h5>
+
+          <p>Type search filters into the input field</p>  
+          <input class="form-control" id="myInputA" type="text" placeholder="Search..">
+          <br>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Address</th>
+                <th scope="col">Select</th>
+              </tr>
+            </thead>
+
+            <tbody id="myTableA">
+              <div class="form-check" required>
+
+              {% for entry in entries %}
+                <tr>
+                    <th scope="row">{{ entry.user_id }}</th>
+                    <td>{{ entry.address }}, {{ entry.city }}, {{ entry.county }} {{ entry.zip }}</td>
+                    <td>
+                        
+                        <input type="radio" name="a" class="form-check-input" id="a" value="{{ entry.user_id }}">
+                      </td>
+                </tr>
+                {% endfor %}
+                </div>
+                <tr hidden>
+                  <th scope="row">0</th>
+                  <td></td>
+                  <td>
+                      <div class="form-check">
+                      <input type="radio" name="a" class="form-check-input" id="exampleCheck1" value="notSelectA" checked>
+                    </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Select Home <strong>B</strong></h5>
+
+          <p>Type search filters into the input field</p>  
+          <input class="form-control" id="myInputB" type="text" placeholder="Search..">
+          <br>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Address</th>
+                <th scope="col">Select</th>
+              </tr>
+            </thead>
+
+            <tbody id="myTableB">
+              <div class="form-check" required>
+              {% for entry in entries %}
+                <tr>
+                    <th scope="row">{{ entry.user_id }}</th>
+                    <td>{{ entry.address }}, {{ entry.city }}, {{ entry.county }} {{ entry.zip }}</td>
+                    <td>
+                        
+                        <input type="radio" name="b" class="form-check-input" id="b" value="{{ entry.user_id }}">
+                      </td>
+                </tr>
+                {% endfor %}
+                </div>
+                <tr hidden>
+                  <th scope="row">0</th>
+                  <td></td>
+                  <td>
+                      <div class="form-check">
+                      <input type="radio" name="b" class="form-check-input" id="exampleCheck1" value="notSelectB" checked>
+                    </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  
+</form>
+
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Month Compare Charts</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" style="background-color:rgb(199, 208, 236);">
+        <div class=card><canvas id="monthBatteryChart"></canvas></div><br>
+        <div class=card><canvas id="monthConsumptionChart"></canvas></div><br>
+        <div class=card><canvas id="monthSolarChart"></canvas></div><br>
+        <div class=card><canvas id="monthSavedChart"></canvas></div><br>
+
+      
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  {% else %}
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">No Search Results Found</h5>
+      </div>
+      <div class="card-body">       
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% else %}
+  <div class="card">
+    <div class="card-header">
+      Featured
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">Login Error</h5>
+      <p class="card-text">Please login as an administator to view this content</p>
+      <a href="{% url 'login' %}" class="btn btn-primary">Login Here</a>
+    </div>
+  </div>
+{% endif %}
+
+
+<script>
+
+$(document).ready(function(){
+        $(function(){
+        $('#compare_form').submit(function(e){
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var data = form.serialize();
+
+                var daylabels = []
+                var valuesBatteryA = []
+                var valuesBatteryB = []
+                var valuesBatteryAver = []
+
+                var $monthChart = $("#monthBatteryChart");
+
+                $.ajax({
+                    type: 'GET',
+                    url: url, 
+                    data: data,
+                    success: function(data){
+
+                      daylabels = data.daylabels
+                      valuesBatteryA = data.valuesBatteryA
+                      valuesBatteryB = data.valuesBatteryB
+                      valuesBatteryAver = data.valuesBatteryAver
+
+                      var ctx = document.getElementById('monthBatteryChart').getContext('2d');
+                      var chart = new Chart(ctx, {
+                      // The type of chart we want to create
+                            type: 'line',
+
+                            // The data for our dataset
+                            data: {
+                                labels: daylabels,
+                                datasets: [{ 
+                                  data: valuesBatteryA,
+                                  label: "Home A",
+                                  borderColor: "#7266EB",
+                                  fill: false
+                                }, { 
+                                  data: valuesBatteryB,
+                                  label: "Home B",
+                                  borderColor: "#3CBA9F",
+                                  fill: false
+                                }, { 
+                                  data: valuesBatteryAver,
+                                  label: "Global average of all registered homes",
+                                  borderColor: "#E0E0E0",
+                                  fill: false
+                                }
+                              ]
+                            
+                            },
+
+                            // Configuration options go here
+                            options: {
+                              title: {
+                                display: true,
+                                fontSize: 20,
+                                text: 'Month Battery Chart'
+                              },
+                              scales: {
+                            xAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'Day of Log'
+                              }
+                            }],
+                            yAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'kWh per Day'
+                              }
+                            }]
+                        }
+                      }
+                    });
+                    //console.log(data)
+                  },
+                  error: function(error){
+                    console.log("Error")
+                    //console.log(error_data)
+          }
+      })
+    });
+  });
+});
+
+// Consumption Chart
+$(document).ready(function(){
+        $(function(){
+        $('#compare_form').submit(function(e){
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var data = form.serialize();
+
+                var daylabels = []
+                var valuesConsumptionA = []
+                var valuesConsumptionB = []
+                var valuesConsumptionAver = []
+
+                var $monthChart = $("#monthConsumptionChart");
+
+                $.ajax({
+                    type: 'GET',
+                    url: url, 
+                    data: data,
+                    success: function(data){
+
+                      daylabels = data.daylabels
+                      valuesConsumptionA = data.valuesConsumptionA
+                      valuesConsumptionB = data.valuesConsumptionB
+                      valuesConsumptionAver = data.valuesConsumptionAver
+
+                      var ctx = document.getElementById('monthConsumptionChart').getContext('2d');
+                      var chart = new Chart(ctx, {
+                      // The type of chart we want to create
+                            type: 'line',
+
+                            // The data for our dataset
+                            data: {
+                                labels: daylabels,
+                                datasets: [{ 
+                                  data: valuesConsumptionA,
+                                  label: "Home A",
+                                  borderColor: "#7266EB",
+                                  fill: false
+                                }, { 
+                                  data: valuesConsumptionB,
+                                  label: "Home B",
+                                  borderColor: "#3CBA9F",
+                                  fill: false
+                                }, { 
+                                  data: valuesConsumptionAver,
+                                  label: "Global average of all registered homes",
+                                  borderColor: "#E0E0E0",
+                                  fill: false
+                                }
+                              ]
+                            
+                            },
+
+                            // Configuration options go here
+                            options: {
+                              title: {
+                                display: true,
+                                fontSize: 20,
+                                text: 'Month Power Consumption Chart'
+                              },
+                              scales: {
+                            xAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'Day of Log'
+                              }
+                            }],
+                            yAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'kWh per Day'
+                              }
+                            }]
+                        }
+                      }
+                    });
+                    //console.log(data)
+                  },
+                  error: function(error){
+                    console.log("Error")
+                    //console.log(error_data)
+          }
+      })
+    });
+  });
+});
+
+// Solar Chart
+$(document).ready(function(){
+        $(function(){
+        $('#compare_form').submit(function(e){
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var data = form.serialize();
+
+                var daylabels = []
+                var valuesSolarA = []
+                var valuesSolarB = []
+                var valuesSolarAver = []
+
+                var $monthChart = $("#monthSolarChart");
+
+                $.ajax({
+                    type: 'GET',
+                    url: url, 
+                    data: data,
+                    success: function(data){
+
+                      daylabels = data.daylabels
+                      valuesSolarA = data.valuesSolarA
+                      valuesSolarB = data.valuesSolarB
+                      valuesSolarAver = data.valuesSolarAver
+
+                      var ctx = document.getElementById('monthSolarChart').getContext('2d');
+                      var chart = new Chart(ctx, {
+                      // The type of chart we want to create
+                            type: 'line',
+
+                            // The data for our dataset
+                            data: {
+                                labels: daylabels,
+                                datasets: [{ 
+                                  data: valuesSolarA,
+                                  label: "Home A",
+                                  borderColor: "#7266EB",
+                                  fill: false
+                                }, { 
+                                  data: valuesSolarB,
+                                  label: "Home B",
+                                  borderColor: "#3CBA9F",
+                                  fill: false
+                                }, { 
+                                  data: valuesSolarAver,
+                                  label: "Global average of all registered homes",
+                                  borderColor: "#E0E0E0",
+                                  fill: false
+                                }
+                              ]
+                            
+                            },
+
+                            // Configuration options go here
+                            options: {
+                              title: {
+                                display: true,
+                                fontSize: 20,
+                                text: 'Month Solar Chart'
+                              },
+                              scales: {
+                            xAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'Day of Log'
+                              }
+                            }],
+                            yAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'kWh per Day'
+                              }
+                            }]
+                        }
+                      }
+                    });
+                    //console.log(data)
+                  },
+                  error: function(error){
+                    console.log("Error")
+                    //console.log(error_data)
+          }
+      })
+    });
+  });
+});
+// Money Saved
+$(document).ready(function(){
+        $(function(){
+        $('#compare_form').submit(function(e){
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var data = form.serialize();
+
+                var daylabels = []
+                var valuesSavedA = []
+                var valuesSavedB = []
+                var valuesSavedAver = []
+
+                var $monthChart = $("#monthSavedChart");
+
+                $.ajax({
+                    type: 'GET',
+                    url: url, 
+                    data: data,
+                    success: function(data){
+
+                      daylabels = data.daylabels
+                      valuesSavedA = data.valuesSavedA
+                      valuesSavedB = data.valuesSavedB
+                      valuesSavedAver = data.valuesSavedAver
+
+                      var ctx = document.getElementById('monthSavedChart').getContext('2d');
+                      var chart = new Chart(ctx, {
+                      // The type of chart we want to create
+                            type: 'line',
+
+                            // The data for our dataset
+                            data: {
+                                labels: daylabels,
+                                datasets: [{ 
+                                  data: valuesSavedA,
+                                  label: "Home A",
+                                  borderColor: "#7266EB",
+                                  fill: false
+                                }, { 
+                                  data: valuesSavedB,
+                                  label: "Home B",
+                                  borderColor: "#3CBA9F",
+                                  fill: false
+                                }, { 
+                                  data: valuesSavedAver,
+                                  label: "Global average of all registered homes",
+                                  borderColor: "#E0E0E0",
+                                  fill: false
+                                }
+                              ]
+                            
+                            },
+
+                            // Configuration options go here
+                            options: {
+                              title: {
+                                display: true,
+                                fontSize: 20,
+                                text: 'Month Money Saved Chart'
+                              },
+                              scales: {
+                            xAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'Day of Log'
+                              }
+                            }],
+                            yAxes: [{
+                              display: true,
+                              scaleLabel: {
+                                display: true,
+                                fontSize: 18,
+                                fontColor: '#000',
+                                fontStyle: 'bold',
+                                labelString: 'Pounds(£) / Day'
+                              }
+                            }]
+                        }
+                      }
+                    });
+                    //console.log(data)
+                  },
+                  error: function(error){
+                    console.log("Error")
+                    //console.log(error_data)
+          }
+      })
+    });
+  });
+});
+
+$(document).ready(function(){
+  $("#myInputA").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTableA tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+
+
+$(document).ready(function(){
+  $("#myInputB").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTableB tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+
+</script>
+{% endblock %}

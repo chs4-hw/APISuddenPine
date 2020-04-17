@@ -1,0 +1,604 @@
+{% extends 'base.html' %}
+
+{% block header %}
+
+<title>Year Data</title>
+<!--End include header-->
+</head>
+
+{% endblock %}
+
+{% block body %}
+
+{% if user.is_superuser %}
+    <!-- Nav Content -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Admin Site</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+              <a class="nav-link" href="{% url 'home_page' %}">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'compare' %}">Compare</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'info' %}">Site Information</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="http://127.0.0.1:8000/admin/">Django Admin</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>           
+          </ul>
+      </div>
+      </nav>
+  <!-- Nav Content -->
+  <!-- Sub Nav Content -->
+  <nav class="navbar navbar-light" style="background-color: #e3f2fd;">
+      <p>Hello, {{ user.first_name }} {{ user.last_name }}</p>
+    </nav>
+  <!-- End Sub Nav Content -->
+
+{% csrf_token %}
+<!-- Month Chart Content -->
+{% for entry in entries %}
+  <div class="container-fluid">
+    <br>
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-4">Yearly Charts</h1>
+        <p class="lead">Charts representing totals over each month over the last five years of the selected home.
+          Each year can be toggled on or off.
+        </p>
+      </div>
+    </div>
+    <br>
+    <div class="accordion" id="accordionCharts">
+  
+      <div class="card">
+      <div class="card-header" id="headingOne">
+        <h2 class="mb-0">
+        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Yearly Battery Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="yearBatteryChart" data-url="http://127.0.0.1:8000/admin/battery/yeardata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+      <br>
+      
+      <div class="card">
+      <div class="card-header" id="headingTwo">
+        <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          Yearly Consumption Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="yearConsumptionChart" data-url="http://127.0.0.1:8000/admin/consumption/yeardata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+      <br>
+      
+       <div class="card">
+      <div class="card-header" id="headingThree">
+        <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          Yearly Solar Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="yearSolarChart" data-url="http://127.0.0.1:8000/admin/solar/yeardata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+      <br>
+      
+      <div class="card">
+      <div class="card-header" id="headingFour">
+        <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+          Yearly Money Saved Chart
+        </button>
+        </h2>
+      </div>
+      <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordionCharts">
+        <div class="card-body col-lg-8 mx-auto d-block">
+          <canvas id="yearSavedChart" data-url="http://127.0.0.1:8000/admin/saved/yeardata?q={{ entry.home_id }}"></canvas>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+  <br>
+{% endfor %}
+
+{% else %}
+
+<div class="card">
+  <div class="card-header">
+    Featured
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Login Error</h5>
+    <p class="card-text">Please login as an administator to view this content</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Login Here</a>
+  </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+// yearBatteryChart //
+
+$(function() {
+var yearData0 = []
+var yearData1 = []
+var yearData2 = []
+var yearData3 = []
+var yearData4 = []
+var yearLabel0 = []
+var yearLabel1 = []
+var yearLabel2 = []
+var yearLabel3 = []
+var yearLabel4 = []
+var labels = []
+
+var $yearChart = $("#yearBatteryChart");
+$.ajax({
+  method: "GET",
+  url: $yearChart.data("url"),
+  success: function(data){
+
+    labels = data.labels
+    yearLabel0 = data.label0
+    yearLabel1 = data.label1
+    yearLabel2 = data.label2
+    yearLabel3 = data.label3
+    yearLabel4 = data.label4
+
+    yearData0 = data.values0
+    yearData1 = data.values1
+    yearData2 = data.values2
+    yearData3 = data.values3
+    yearData4 = data.values4
+
+    var ctx = document.getElementById('yearBatteryChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+          // The data for our dataset
+          data: {
+              labels: labels,
+              datasets: [{ 
+                data: yearData0,
+                label: yearLabel0,
+                borderColor: "#000000",
+                fill: false
+              }, { 
+                data: yearData1,
+                label: yearLabel1,
+                borderColor: "#FF1A2A",
+                fill: false
+              }, { 
+                data: yearData2,
+                label: yearLabel2,
+                borderColor: "#FFFF97",
+                fill: false
+              }, { 
+                data: yearData3,
+                label: yearLabel3,
+                borderColor: "#00FF00",
+                fill: false
+              }, { 
+                data: yearData4,
+                label: yearLabel4,
+                borderColor: "#66FFFF",
+                fill: false
+              }
+            ]
+          
+          },
+
+          // Configuration options go here
+          options: {
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Yearly Battery Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Month Logs'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Month'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+// yearConsumptionChart //
+
+$(function() {
+
+var yearData0 = []
+var yearData1 = []
+var yearData2 = []
+var yearData3 = []
+var yearData4 = []
+var yearLabel0 = []
+var yearLabel1 = []
+var yearLabel2 = []
+var yearLabel3 = []
+var yearLabel4 = []
+var labels = []
+
+var $yearChart = $("#yearConsumptionChart");
+$.ajax({
+  method: "GET",
+  url: $yearChart.data("url"),
+  success: function(data){
+
+    labels = data.labels
+    yearLabel0 = data.label0
+    yearLabel1 = data.label1
+    yearLabel2 = data.label2
+    yearLabel3 = data.label3
+    yearLabel4 = data.label4
+
+    yearData0 = data.values0
+    yearData1 = data.values1
+    yearData2 = data.values2
+    yearData3 = data.values3
+    yearData4 = data.values4
+
+    var ctx = document.getElementById('yearConsumptionChart').getContext('2d');
+    var chart = new Chart(ctx, {
+    // The type of chart we want to create
+          type: 'line',
+
+          // The data for our dataset
+          data: {
+              labels: labels,
+              datasets: [{ 
+                data: yearData0,
+                label: yearLabel0,
+                borderColor: "#000000",
+                fill: false
+              }, { 
+                data: yearData1,
+                label: yearLabel1,
+                borderColor: "#FF1A2A",
+                fill: false
+              }, { 
+                data: yearData2,
+                label: yearLabel2,
+                borderColor: "#FFFF97",
+                fill: false
+              }, { 
+                data: yearData3,
+                label: yearLabel3,
+                borderColor: "#00FF00",
+                fill: false
+              }, { 
+                data: yearData4,
+                label: yearLabel4,
+                borderColor: "#66FFFF",
+                fill: false
+              }
+            ]
+          
+          },
+
+          // Configuration options go here
+          options: {
+            title: {
+              display: true,
+              fontSize: 20,
+              text: 'Yearly Power Consumption Chart'
+            },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Month Logs'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Month'
+						}
+					}]
+				}
+          }
+      });
+    //console.log(data)
+  },
+  error: function(error){
+    console.log("Error")
+    //console.log(error_data)
+  }
+})
+});
+
+// yearSavedChart //
+
+$(function() {
+  var yearData0 = []
+  var yearData1 = []
+  var yearData2 = []
+  var yearData3 = []
+  var yearData4 = []
+  var yearLabel0 = []
+  var yearLabel1 = []
+  var yearLabel2 = []
+  var yearLabel3 = []
+  var yearLabel4 = []
+  var labels = []
+
+  var $yearChart = $("#yearSavedChart");
+  $.ajax({
+    method: "GET",
+    url: $yearChart.data("url"),
+    success: function(data){
+
+      labels = data.labels
+      yearLabel0 = data.label0
+      yearLabel1 = data.label1
+      yearLabel2 = data.label2
+      yearLabel3 = data.label3
+      yearLabel4 = data.label4
+
+      yearData0 = data.values0
+      yearData1 = data.values1
+      yearData2 = data.values2
+      yearData3 = data.values3
+      yearData4 = data.values4
+
+      var ctx = document.getElementById('yearSavedChart').getContext('2d');
+      var chart = new Chart(ctx, {
+      // The type of chart we want to create
+            type: 'line',
+
+            // The data for our dataset
+            data: {
+                labels: labels,
+                datasets: [{ 
+                  data: yearData0,
+                  label: yearLabel0,
+                  borderColor: "#000000",
+                  fill: false
+                }, { 
+                  data: yearData1,
+                  label: yearLabel1,
+                  borderColor: "#FF1A2A",
+                  fill: false
+                }, { 
+                  data: yearData2,
+                  label: yearLabel2,
+                  borderColor: "#FFFF97",
+                  fill: false
+                }, { 
+                  data: yearData3,
+                  label: yearLabel3,
+                  borderColor: "#00FF00",
+                  fill: false
+                }, { 
+                  data: yearData4,
+                  label: yearLabel4,
+                  borderColor: "#66FFFF",
+                  fill: false
+                }
+              ]
+            
+            },
+
+            // Configuration options go here
+            options: {
+              title: {
+                display: true,
+                fontSize: 20,
+                text: 'Yearly Money Saved Chart'
+              },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Month Logs'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Pounds(£) / Month'
+						}
+					}]
+				}
+            }
+        });
+      //console.log(data)
+    },
+    error: function(error){
+      console.log("Error")
+      //console.log(error_data)
+    }
+  })
+});
+
+// yearSolarChart //
+
+$(function() {
+  var yearData0 = []
+  var yearData1 = []
+  var yearData2 = []
+  var yearData3 = []
+  var yearData4 = []
+  var yearLabel0 = []
+  var yearLabel1 = []
+  var yearLabel2 = []
+  var yearLabel3 = []
+  var yearLabel4 = []
+  var labels = []
+
+  var $yearChart = $("#yearSolarChart");
+  $.ajax({
+    method: "GET",
+    url: $yearChart.data("url"),
+    success: function(data){
+
+      labels = data.labels
+      yearLabel0 = data.label0
+      yearLabel1 = data.label1
+      yearLabel2 = data.label2
+      yearLabel3 = data.label3
+      yearLabel4 = data.label4
+
+      yearData0 = data.values0
+      yearData1 = data.values1
+      yearData2 = data.values2
+      yearData3 = data.values3
+      yearData4 = data.values4
+
+      var ctx = document.getElementById('yearSolarChart').getContext('2d');
+      var chart = new Chart(ctx, {
+      // The type of chart we want to create
+            type: 'line',
+
+            // The data for our dataset
+            data: {
+                labels: labels,
+                datasets: [{ 
+                  data: yearData0,
+                  label: yearLabel0,
+                  borderColor: "#000000",
+                  fill: false
+                }, { 
+                  data: yearData1,
+                  label: yearLabel1,
+                  borderColor: "#FF1A2A",
+                  fill: false
+                }, { 
+                  data: yearData2,
+                  label: yearLabel2,
+                  borderColor: "#FFFF97",
+                  fill: false
+                }, { 
+                  data: yearData3,
+                  label: yearLabel3,
+                  borderColor: "#00FF00",
+                  fill: false
+                }, { 
+                  data: yearData4,
+                  label: yearLabel4,
+                  borderColor: "#66FFFF",
+                  fill: false
+                }
+              ]
+            
+            },
+
+            // Configuration options go here
+            options: {
+              title: {
+                display: true,
+                fontSize: 20,
+                text: 'Yearly Solar Chart'
+              },
+            scales: {
+					xAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'Month Logs'
+						}
+					}],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+              fontSize: 18,
+              fontColor: '#000',
+              fontStyle: 'bold',
+							labelString: 'kWh per Month'
+						}
+					}]
+				}
+            }
+        });
+    },
+    error: function(error){
+      console.log("Error")
+    }
+  })
+});
+
+</script>
+
+{% endblock %}
+
+
+
+
